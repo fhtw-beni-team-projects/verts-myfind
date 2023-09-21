@@ -1,7 +1,11 @@
+#include <cstdlib>
 #include <iostream>
 #include <string>
-#include <unistd.h>
 #include <vector>
+#include <unistd.h>
+#include <dirent.h>
+#include <errno.h>
+#include <cstring>
 
 int main(int argc, char* argv[]) {
 	std::cout << "Hello World!" << std::endl; // This code prints "Hello World!" to the console
@@ -24,13 +28,13 @@ int main(int argc, char* argv[]) {
 	std::string searchpath;
 	std::vector<std::string> filenames;
 
-	if (optind < argc)
+	if (optind < argc) {
 		searchpath = argv[optind];
+	}
 	optind++;
 	for (; optind < argc; optind++) {
 		filenames.push_back(argv[optind]);
 	}
-
 
 	/* Temporary print statements */
 	std::cout << "searchpath: " << searchpath << std::endl;
@@ -38,5 +42,21 @@ int main(int argc, char* argv[]) {
 	for ( auto& filename : filenames) {
 		std::cout << filename << ", ";
 	}
+	std::cout << std::endl;
+
+
+	struct dirent *direntp;
+	DIR *dirp;
+
+	if ((dirp = opendir(searchpath.c_str())) == NULL) {
+    	perror("Failed to open directory");
+    	return 1;
+   	}
+
+	std::cout << "files: ";
+	while ((direntp = readdir(dirp)) != NULL)
+    	printf("%s\n", direntp->d_name);
+	while ((closedir(dirp) == -1) && (errno == EINTR))
+    	; 
 	std::cout << std::endl;
 }
