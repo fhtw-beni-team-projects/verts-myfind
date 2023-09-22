@@ -6,17 +6,24 @@
 #include <dirent.h>
 #include <errno.h>
 #include <cstring>
+#include <filesystem>
 
-int main(int argc, char* argv[]) {
-	std::cout << "Hello World!" << std::endl; // This code prints "Hello World!" to the console
+namespace fs = std::filesystem;
+
+void search(std::string searchpath, std::string filename, bool case_sensitive, bool recursive);
+
+int main(int argc, char* argv[])
+{
+	bool case_sensitive = false;
+	bool recursive = false;
 
 	while (true) {
 		switch (getopt(argc, argv, "iR")) {
 			case 'i':
-				std::cout << "Specified -i" << std::endl;
+				case_sensitive = true;
 				continue;
 			case 'R':
-				std::cout << "Specified -R" << std::endl;
+				recursive = true;
 				continue;
 			case -1:
 				break;
@@ -45,7 +52,12 @@ int main(int argc, char* argv[]) {
 	std::cout << std::endl;
 
 
-	struct dirent *direntp;
+	search(searchpath, filenames[0], case_sensitive, recursive);
+
+
+   	/* Copy-pasted from the example repo */
+
+	/*struct dirent *direntp;
 	DIR *dirp;
 
 	if ((dirp = opendir(searchpath.c_str())) == NULL) {
@@ -58,5 +70,17 @@ int main(int argc, char* argv[]) {
     	printf("%s\n", direntp->d_name);
 	while ((closedir(dirp) == -1) && (errno == EINTR))
     	; 
-	std::cout << std::endl;
+	std::cout << std::endl;*/
+}
+
+void search(std::string searchpath, std::string filename, bool case_sensitive, bool recursive)
+{
+	for ( auto& entry : fs::directory_iterator(searchpath)) { // can we use recursive_directory_iterator()?
+		if (recursive && entry.is_directory()) {
+			search(entry.path(), filename, case_sensitive, recursive);
+			continue;
+		}
+
+		std::cout << entry.path().filename() << std::endl;
+	}
 }
