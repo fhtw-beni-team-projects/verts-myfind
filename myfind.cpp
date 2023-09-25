@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <sys/types.h>
 #include <vector>
 #include <unistd.h>
 #include <dirent.h>
@@ -51,9 +52,27 @@ int main(int argc, char* argv[])
 	}
 	std::cout << std::endl;
 
+	/* forks */
 
-	search(searchpath, filenames[0], case_sensitive, recursive);
+	pid_t pid;
 
+	for ( auto& filename : filenames ) {
+		pid = fork();
+
+		switch (pid) {
+			case -1:
+				/* error handling */
+				continue;
+			case 0:
+				search(searchpath, filename, case_sensitive, recursive);
+				break;
+			default:
+				std::cout << "Created child with PID " << pid << std::endl;
+				continue;
+		}
+
+		break;
+	}
 
    	/* Copy-pasted from the example repo */
 
@@ -81,6 +100,7 @@ void search(std::string searchpath, std::string filename, bool case_sensitive, b
 			continue;
 		}
 
-		std::cout << entry.path().filename() << std::endl;
+		// limit to matching files
+		std::cout << getpid() << ": " << entry.path().filename() << ": " << fs::canonical(fs::absolute(entry.path())) << std::endl;
 	}
 }
