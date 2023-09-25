@@ -1,12 +1,7 @@
-#include <cstdlib>
 #include <iostream>
 #include <string>
-#include <sys/types.h>
-#include <vector>
 #include <unistd.h>
-#include <dirent.h>
-#include <errno.h>
-#include <cstring>
+#include <vector>
 #include <filesystem>
 
 namespace fs = std::filesystem;
