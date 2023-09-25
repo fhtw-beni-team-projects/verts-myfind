@@ -15,6 +15,8 @@ void search(std::string searchpath, std::string filename, bool case_sensitive, b
 
 int main(int argc, char* argv[])
 {
+	/* option parsing */
+
 	bool case_sensitive = false;
 	bool recursive = false;
 
@@ -33,6 +35,10 @@ int main(int argc, char* argv[])
 		break;
 	}
 
+
+
+	/* arguments */
+
 	std::string searchpath;
 	std::vector<std::string> filenames;
 
@@ -44,13 +50,18 @@ int main(int argc, char* argv[])
 		filenames.push_back(argv[optind]);
 	}
 
+
+
 	/* Temporary print statements */
+
 	std::cout << "searchpath: " << searchpath << std::endl;
 	std::cout << "filename(s): ";
 	for ( auto& filename : filenames) {
 		std::cout << filename << ", ";
 	}
 	std::cout << std::endl;
+
+
 
 	/* forks */
 
@@ -74,7 +85,10 @@ int main(int argc, char* argv[])
 		break;
 	}
 
+
+
    	/* Copy-pasted from the example repo */
+   	/* irrelevant with filesystem library */
 
 	/*struct dirent *direntp;
 	DIR *dirp;
@@ -100,7 +114,7 @@ void search(std::string searchpath, std::string filename, bool case_sensitive, b
 			continue;
 		}
 
-		// limit to matching files
+		// TODO: if-statement limiting to matching files
 		std::cout << getpid() << ": " << entry.path().filename() << ": " << fs::canonical(fs::absolute(entry.path())) << std::endl;
 	}
 }
