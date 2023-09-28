@@ -1,10 +1,16 @@
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <string>
-#include <unistd.h>
 #include <vector>
-#include <filesystem>
-
-namespace fs = std::filesystem;
+#include <strings.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
 
 void search(std::string searchpath, std::string filename, bool case_sensitive, bool recursive);
 
@@ -12,13 +18,13 @@ int main(int argc, char* argv[])
 {
 	/* option parsing */
 
-	bool case_sensitive = false;
+	bool case_sensitive = true;
 	bool recursive = false;
 
 	while (true) {
 		switch (getopt(argc, argv, "iR")) {
 			case 'i':
-				case_sensitive = true;
+				case_sensitive = false;
 				continue;
 			case 'R':
 				recursive = true;
@@ -80,36 +86,54 @@ int main(int argc, char* argv[])
 		break;
 	}
 
-
-
-   	/* Copy-pasted from the example repo */
-   	/* irrelevant with filesystem library */
-
-	/*struct dirent *direntp;
-	DIR *dirp;
-
-	if ((dirp = opendir(searchpath.c_str())) == NULL) {
-    	perror("Failed to open directory");
-    	return 1;
-   	}
-
-	std::cout << "files: ";
-	while ((direntp = readdir(dirp)) != NULL)
-    	printf("%s\n", direntp->d_name);
-	while ((closedir(dirp) == -1) && (errno == EINTR))
-    	; 
-	std::cout << std::endl;*/
+	// TODO: handle child-process termination
 }
+
 
 void search(std::string searchpath, std::string filename, bool case_sensitive, bool recursive)
 {
-	for ( auto& entry : fs::directory_iterator(searchpath)) { // can we use recursive_directory_iterator()?
+	/* using C filehandling */
+
+	struct dirent* de;
+	DIR* dr;
+	if ((dr = opendir(searchpath.c_str())) == NULL) {
+    	perror("failed to open directory");
+    	return;
+	}
+
+	int (*compptr)(const char *, const char *) = case_sensitive ? strcmp : strcasecmp;	
+
+	while ((de = readdir(dr)) != NULL) {
+		if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) {
+			continue;
+		}
+
+		if (recursive && de->d_type == DT_DIR) {
+			search(searchpath + "/" + de->d_name, filename, case_sensitive, recursive);
+			continue;
+		}
+
+		if (!(*compptr)(filename.c_str(), de->d_name)) {
+			char resolved_path[_PC_PATH_MAX];
+			realpath((searchpath + "/" + de->d_name).c_str(), resolved_path);
+			std::cout << getpid() << ": " << de->d_name << ": " << resolved_path << std::endl;
+		}
+	}
+
+	while ((closedir(dr) == -1) && (errno == EINTR));
+
+	/* using C++ filesystem library */
+
+	/*for ( auto& entry : fs::directory_iterator(searchpath)) { // can we use recursive_directory_iterator()?
 		if (recursive && entry.is_directory()) {
 			search(entry.path(), filename, case_sensitive, recursive);
 			continue;
 		}
 
-		// TODO: if-statement limiting to matching files
-		std::cout << getpid() << ": " << entry.path().filename() << ": " << fs::canonical(fs::absolute(entry.path())) << std::endl;
-	}
+		int (*compptr)(const char *, const char *) = case_sensitive ? strcmp : strcasecmp;
+
+		if (!(*compptr)(filename.c_str(), entry.path().filename().u8string().c_str())) {
+			std::cout << getpid() << ": " << entry.path().filename().u8string() << ": " << fs::canonical(fs::absolute(entry.path())).u8string() << std::endl;
+		}
+	}*/
 }
