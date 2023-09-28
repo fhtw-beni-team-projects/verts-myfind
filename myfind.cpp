@@ -114,9 +114,10 @@ void search(std::string searchpath, std::string filename, bool case_sensitive, b
 		}
 
 		if (!(*compptr)(filename.c_str(), de->d_name)) {
-			char resolved_path[_PC_PATH_MAX];
+			char* resolved_path = (char *)malloc(pathconf(".", _PC_PATH_MAX));
 			realpath((searchpath + "/" + de->d_name).c_str(), resolved_path);
 			std::cout << getpid() << ": " << de->d_name << ": " << resolved_path << std::endl;
+			free(resolved_path);
 		}
 	}
 
