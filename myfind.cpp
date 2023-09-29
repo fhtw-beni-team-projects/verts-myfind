@@ -1,9 +1,12 @@
+#include <asm-generic/errno-base.h>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <vector>
 #include <strings.h>
 #include <unistd.h>
@@ -75,20 +78,28 @@ int main(int argc, char* argv[])
 
 		switch (pid) {
 			case -1:
-				perror("error creating child process");
+				perror(("error creating child process for filename " + filename).c_str());
 				continue;
 			case 0:
 				search(searchpath, filename, case_sensitive, recursive);
 				break;
 			default:
-				std::cout << "Created child with PID " << pid << std::endl;
+//				std::cout << "Created child with PID " << pid << std::endl;
 				continue;
 		}
 
 		break;
 	}
 
-	// TODO: handle child-process termination
+	/* zombie slayer 9000 */
+
+	pid_t childpid;
+
+	while ((childpid = waitpid(-1, NULL, WNOHANG))) {
+		if ((childpid == -1) && (errno != EINTR)) {
+			break;
+		}
+	}
 }
 
 
