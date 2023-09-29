@@ -122,8 +122,9 @@ void search(std::string searchpath, std::string filename, bool case_sensitive, b
 			continue;
 		}
 
-		if (recursive && de->d_type == DT_DIR) {
-			search(searchpath + "/" + de->d_name, filename, case_sensitive, recursive);
+		if (de->d_type == DT_DIR) {
+			if (recursive)
+				search(searchpath + "/" + de->d_name, filename, case_sensitive, recursive);
 			continue;
 		}
 
