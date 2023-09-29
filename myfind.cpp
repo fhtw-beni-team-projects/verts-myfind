@@ -23,6 +23,8 @@ int main(int argc, char* argv[])
 
 	while (true) {
 		switch (getopt(argc, argv, "iR")) {
+			case '?':
+				perror("unkown option");
 			case 'i':
 				case_sensitive = false;
 				continue;
@@ -55,12 +57,12 @@ int main(int argc, char* argv[])
 
 	/* Temporary print statements */
 
-	std::cout << "searchpath: " << searchpath << std::endl;
-	std::cout << "filename(s): ";
-	for ( auto& filename : filenames) {
-		std::cout << filename << ", ";
-	}
-	std::cout << std::endl;
+//	std::cout << "searchpath: " << searchpath << std::endl;
+//	std::cout << "filename(s): ";
+//	for ( auto& filename : filenames) {
+//		std::cout << filename << ", ";
+//	}
+//	std::cout << std::endl;
 
 
 
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
 
 		switch (pid) {
 			case -1:
-				/* error handling */
+				perror("error creating child process");
 				continue;
 			case 0:
 				search(searchpath, filename, case_sensitive, recursive);
@@ -101,6 +103,7 @@ void search(std::string searchpath, std::string filename, bool case_sensitive, b
     	return;
 	}
 
+	// set compare function (case sensitive/insensitve)
 	int (*compptr)(const char *, const char *) = case_sensitive ? strcmp : strcasecmp;	
 
 	while ((de = readdir(dr)) != NULL) {
@@ -114,7 +117,7 @@ void search(std::string searchpath, std::string filename, bool case_sensitive, b
 		}
 
 		if (!(*compptr)(filename.c_str(), de->d_name)) {
-			char* resolved_path = (char *)malloc(pathconf(".", _PC_PATH_MAX));
+			char* resolved_path = (char*)malloc(pathconf(".", _PC_PATH_MAX));
 			realpath((searchpath + "/" + de->d_name).c_str(), resolved_path);
 			std::cout << getpid() << ": " << de->d_name << ": " << resolved_path << std::endl;
 			free(resolved_path);
