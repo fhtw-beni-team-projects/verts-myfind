@@ -1,18 +1,8 @@
-#include <cstddef>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <stdio.h>
-#include <string>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <vector>
-#include <strings.h>
+#include <sys/wait.h>
 #include <unistd.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
 #include <dirent.h>
 
 void search(int pipe[2], std::string searchpath, std::string filename, bool case_sensitive, bool recursive);
